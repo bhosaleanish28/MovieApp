@@ -1,0 +1,157 @@
+using System.Security.Cryptography.X509Certificates;
+using MovieManager.Model;
+
+namespace MovieManager
+{
+    public class MovieManagerClass
+    {
+        public static List<Movie> movies = new List<Movie>();
+        public const int MAX_CAPACITY = 2;
+        public static void AddMovie()
+        {
+            
+            try
+            {
+                if (Movie.count < MAX_CAPACITY)
+                {
+                    Movie newMovie = new Movie();
+
+                    Console.WriteLine("Enter Movie Name: ");
+                    string name = Console.ReadLine();
+                    newMovie.MovieName = name;
+
+                    Console.WriteLine("Enter Movie Genre: ");
+                    string genre = Console.ReadLine();
+                    newMovie.MovieGenre = genre;
+
+                    Console.WriteLine("Enter Movie Year (e.g., 2024): ");
+                    int year = int.Parse(Console.ReadLine());
+                    newMovie.MovieYear = year;
+
+                    string id = $"{name.Substring(0, Math.Min(2, name.Length)).PadRight(2, 'X')}" +
+                                $"{genre.Substring(0, Math.Min(2, genre.Length)).PadRight(2, 'X')}" +
+                                $"{(year % 100):D2}";
+                    newMovie.MovieID = id;
+
+                    movies.Add(newMovie);
+
+                    Console.WriteLine("Movie added succesfully");
+
+                    SerialDeserial.SerializeData(movies);
+
+                }
+                else
+                {
+                    throw new StoreFull("Movie store is at maximum capacity.");
+                    Movie.count--;
+                }
+                
+            }
+            catch (StoreFull maxstore)
+            {
+                Console.WriteLine(maxstore.Message);
+            }
+        }
+
+        public static void DisplayMovies()
+        {
+            try
+            {
+                if(movies.Count > 0)
+                {
+                    Console.WriteLine("All Movies");
+                    foreach (Movie movie in movies)
+                    {
+                        Console.WriteLine("Movie ID: "+movie.MovieID);
+                        Console.WriteLine("Movie Name: "+movie.MovieName);
+                        Console.WriteLine("Movie Genre: "+ movie.MovieGenre);
+                        Console.WriteLine("Movie Year of release: "+movie.MovieYear);
+                        Console.WriteLine();
+
+                    }
+                }
+                else
+                {
+                    throw new NoMovie("No movies to dislay");
+                }
+            }
+            catch(NoMovie noMovie)
+            {
+                Console.WriteLine(noMovie.Message);
+            }
+
+        }
+
+        public static void DeleteMovie()
+        {
+            Console.WriteLine("Enter movie ID: ");
+            string movieID = Console.ReadLine();
+            try
+            {
+                bool movieFound = false;
+                foreach (var movie in movies)
+                {
+                    if (movie.MovieID == movieID)
+                    {
+                        movies.Remove(movie);
+                        movieFound = true;
+                        Console.WriteLine("Movie deleted successfully.");
+                        break;
+                    }
+                }
+
+                if (!movieFound)
+                {
+                    throw new NoMovieFound("No movie Found");
+                }
+
+            }
+            catch (NoMovieFound noMovie)
+            {
+                Console.WriteLine(noMovie.Message);
+            }
+
+            SerialDeserial.SerializeData(movies);
+        }
+
+        public static void FindMovie()
+        {
+            Console.WriteLine("Enter movie ID: ");
+            string movieID = Console.ReadLine();
+
+            try
+            {
+                bool movieFound = false;
+                foreach (var movie in movies)
+                {
+                    if (movie.MovieID == movieID)
+                    {
+                        Console.WriteLine("Movie ID: " + movie.MovieID);
+                        Console.WriteLine("Movie Name: " + movie.MovieName);
+                        Console.WriteLine("Movie Genre: " + movie.MovieGenre);
+                        Console.WriteLine("Movie Year of release: " + movie.MovieYear);
+                        Console.WriteLine();
+                        movieFound = true;
+                        break;
+                    }
+                }
+
+                if (!movieFound)
+                {
+                    throw new NoMovieFound("No movie Found");
+                }
+                }
+            catch (NoMovieFound noMovie)
+            {
+                Console.WriteLine(noMovie.Message);
+            }
+        }
+
+        public static void ClearAll()
+        {
+            movies.Clear();
+            Console.WriteLine("Movie store cleared succesfully.");
+            SerialDeserial.SerializeData(movies);
+        }
+    }
+}
